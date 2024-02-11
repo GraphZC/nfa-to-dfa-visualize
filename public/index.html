@@ -13,9 +13,9 @@
     ></script>
     <script src="https://unpkg.com/d3-graphviz@2.6.1/build/d3-graphviz.js"></script>
     <style type="text/css">
-        #mynetwork {
+        #mynetwork-container {
             width: 800px;
-            height: 400px;
+            height: 420px;
             border: 1px solid lightgray;
         }
     </style>
@@ -25,8 +25,8 @@
     <div class="flex justify-center">
         <div class="px-5 py-3 max-w-4xl">
             <div class="py-8 gap-y-4">
-                <h1 class="text-5xl text-bold pb-2 text-gray-700">NFA CONVERTER</h1>
-                <p class="text-2xl font-light pb-2 text-gray-700">Converts NFA to DFA graph </p>
+                <h1 class="text-5xl font-bold pb-2 text-gray-700">NFA CONVERTER</h1>
+                <p class="text-2xl font-semibold pb-2 text-gray-700">Converts NFA to DFA</p>
                 <hr>
             </div>
 
@@ -80,7 +80,7 @@
                 <form id="select-start-state" onclick="setStartState(event)">
                     <div class="flex gap-2">
                         <div class="w-1/2">
-                            <label for="start-state" class="block text-gray-700 font-bold mb-2">Start State <span id="current-start-state" class="text-cyan-500"></span></label>
+                            <label for="start-state" class="block text-gray-700 font-bold mb-2">Start State <span id="current-start-state" class="text-blue-500"></span></label>
                             <select name="start-state" id="start-state"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
                                 <option value="">Select state</option>
@@ -173,15 +173,23 @@
             </div>
 
             <!-- Graph -->
-            <div class="pb-8">
+            <div class="pb-16">
                 <button onclick="generateAndRenderFSM()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-4">
-                    Generate
+                    Generate DFA
                 </button>
-                <div id="mynetwork"></div>
+                <div id="mynetwork-container">
+                    <div class="flex justify-start items-center w-full h-8 border-b border-gray-300">
+                        <span class="pl-4 font-bold">Machine DFA</span>
+                    </div>
+                    <div class="flex justify-center items-center h-full">
+                        <div id="mynetwork" class="pb-20"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Footer -->
-            <div></div>
+            <div>
+            </div>
 
             <!-- Script -->
             <script type="text/javascript" src="./script/Graph.js"></script>
@@ -506,6 +514,7 @@
                     let dotString = generateFSMDotString(dfaGraph.startState, dfaGraph.acceptStates, dfaGraph.transitions);
                     renderGraph(dotString);
                 }
+                
             </script>
             <script type="module">
                 // Import the functions you need from the SDKs you need
