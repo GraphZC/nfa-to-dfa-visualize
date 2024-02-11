@@ -1,5 +1,5 @@
 ## NFA Converter
-# converts NFA to DFA graph
+converts NFA to DFA graph
 
 1. ธนฤกษ์ โอเจริญ 6410401078
 2. ธัญมาศ ฉันเจริญ 6410406631
