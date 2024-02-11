@@ -470,7 +470,7 @@
                 }
 
                 function generateFSMDotString(startState, acceptStates, transitions) {
-                    console.log(startState, acceptStates, transitions);
+                    
                     let dotStr = "digraph FSM {\n";
                     dotStr += "rankdir=LR;\n";
                     dotStr += "size=\"8,5\";\n";
@@ -501,7 +501,7 @@
                     const nfaGraph = new Graph(startState, acceptState, states, alphabets, transitions);
                     // const nfaGraph = hardCodeInput();
                     const dfaGraph = nfaToDfa(nfaGraph);
-                    
+                    document.getElementById('mynetwork').innerHTML = '';
 
                     let dotString = generateFSMDotString(dfaGraph.startState, dfaGraph.acceptStates, dfaGraph.transitions);
                     renderGraph(dotString);
