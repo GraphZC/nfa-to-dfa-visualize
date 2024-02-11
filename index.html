@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compiler NFA to DFA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script
+      src="https://unpkg.com/viz.js@1.8.1/viz.js"
+      type="javascript/worker"
+    ></script>
+    <script src="https://unpkg.com/d3-graphviz@2.6.1/build/d3-graphviz.js"></script>
+    <style type="text/css">
+        #mynetwork {
+            width: 800px;
+            height: 400px;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex justify-center">
+        <div class="px-5 py-3 max-w-4xl">
+            <div class="py-8">
+                <h1 class="text-5xl text-bold pb-2 text-gray-700">NFA CONVERTER</h1>
+                <p>Convert NFA to DFA</p>
+                <hr>
+            </div>
+
+            <!-- Create state frin -->
+            <div class="py-4">
+                <label for="from-state" class="block text-gray-700 font-bold mb-2">NFA State</label>
+                <form id="create-state-form" onsubmit="addState(event)">
+                    <input type="text" id="state-field" name="state" placeholder="Ex. q0"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" />
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Add state
+                    </button>
+                </form>
+
+                <!-- State List -->
+                <div class="py-4">
+                    <label for="from-state" class="block text-gray-500 text-sm font-bold mb-2">State List</label>
+                    <div>
+                        <ul id="state-list" class="mb-2">
+                        </ul>
+                    </div>
+                    <hr />
+                </div>
+            </div>
+
+
+            <!-- Alphabet creation -->
+            <div class="pb-4">
+                <label for="from-state" class="block text-gray-700 font-bold mb-2">Alphabet</label>
+                <form id="create-alphabet-form" onsubmit="addAlphabet(event)">
+                    <input type="text" id="alphabet-field" name="alphabet" placeholder="Ex. a"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" />
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Add alphabet
+                    </button>
+                </form>
+                    
+                <!-- Alphabet List -->
+                <div class="py-4">
+                    <label for="from-state" class="block text-gray-500 text-sm font-bold mb-2">Alphabet List</label>
+                    <div>
+                        <ul id="alphabet-list" class="mb-2">
+                        </ul>
+                    </div>
+                    <hr />
+                </div>
+            </div>
+            
+             <!-- Start state -->
+             <div>
+                <form id="select-start-state" onclick="setStartState(event)">
+                    <div class="flex gap-2">
+                        <div class="w-1/2">
+                            <label for="start-state" class="block text-gray-700 font-bold mb-2">Start State <span id="current-start-state" class="text-cyan-500"></span></label>
+                            <select name="start-state" id="start-state"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+                                <option value="">Select state</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-8">
+                                Set start state
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Accept State -->
+            <div>
+                <form id="create-accept-state-form" onsubmit="addAcceptState(event)">
+                    <div class="flex gap-2 mt-2">
+                        <div class="w-1/2">
+                            <label for="accept-state" class="block text-gray-700 font-bold mb-2">Accept State</label>
+                            <select name="accept-state" id="accept-state-select"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+                                <option value="">Select state</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-8">
+                                Add accept state
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Accept state List -->
+                <div class="py-4">
+                    <label for="from-state" class="block text-gray-500 text-sm font-bold mb-2">Accept State List</label>
+                    <ul id="accept-state-list" class="mb-2">
+                    </ul>
+                    <hr>
+                </div>
+            </div>
+
+            <!-- Transition creation -->
+            <div class="py-4">
+                <form id="create-transition-form" onsubmit="addTransition(event)">
+                    <div class="flex gap-2">
+                        <div class="w-1/2">
+                            <label for="from-state" class="block text-gray-700 font-bold mb-2">From State</label>
+                            <select name="from-state" id="from-state"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+                                <option value="">Select state</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <label for="to-state" class="block text-gray-700 font-bold mb-2">To State</label>
+                            <select name="to-state" id="to-state"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+                                <option value="">Select state</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <div class="w-1/2">
+                            <label for="input" class="block text-gray-700 font-bold mb-2">Aphabet</label>
+                            <select name="alphabet" id="alphabet-select"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+                                <option value="eps">ε</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-8">
+                                Add transition
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Transition list -->
+                <div class="py-4">
+                    <label for="from-state" class="block text-gray-500 text-sm font-bold mb-2">Transition List</label>
+                    <div>
+                        <ul id="transition-list" class="mb-2">
+                        </ul>
+                    </div>
+                    <hr />
+                </div>
+            </div>
+
+            <!-- Graph -->
+            <div class="pb-8">
+                <button onclick="generateAndRenderFSM()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-4">
+                    Generate
+                </button>
+                <div id="mynetwork"></div>
+            </div>
+
+            <!-- Footer -->
+            <div></div>
+
+            <!-- Script -->
+            <script type="text/javascript" src="./script/Graph.js"></script>
+            <script type="text/javascript" src="./script/DFAConvert.js"></script>
+
+            <script type="text/javascript">
+                const stateField = document.getElementById('state-field');
+                const stateList = document.getElementById('state-list');
+
+                const alphabetField = document.getElementById('alphabet-field');
+                const alphabetList = document.getElementById('alphabet-list');
+
+                const fromStateSelect = document.getElementById('from-state');
+                const toStateSelect = document.getElementById('to-state');
+                const alphabetSelect = document.getElementById('alphabet-select');
+
+                const createTransitionForm = document.getElementById('create-transition-form');
+                const transitionList = document.getElementById('transition-list');
+
+                const startStateSelect = document.getElementById('start-state');
+                const currentStartState = document.getElementById('current-start-state');
+
+                const acceptStateSelect = document.getElementById('accept-state-select');
+                const acceptStateList = document.getElementById('accept-state-list');
+                
+                states = [];
+                alphabets = [];
+                transitions = [];
+                startState = null;
+                acceptState = [];
+                
+                const addState = (e) => {
+                    e.preventDefault();
+                    const value = stateField.value.trim();
+
+                    if (value === '') {
+                        return;
+                    }
+
+                    stateField.value = '';
+
+                    if (states.includes(value)) {
+                        return;
+                    }
+
+                    states.push(value);
+                    renderStateList();
+                    renderStateOptions();
+                    renderStartStateOptions();
+                    renderAcceptStateOptions();
+                }
+
+                const renderAcceptStateOptions = () => {
+                    acceptStateSelect.innerHTML = '';
+                    states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state;
+                        option.textContent = state;
+                        acceptStateSelect.appendChild(option);
+                    });
+                }
+
+                const renderStateList = () => {
+                    stateList.innerHTML = '';
+                    states.forEach(state => {
+                        const li = document.createElement('li');
+                        li.classList = "p-3 border border-gray-300"
+                        li.textContent = state;
+                        stateList.appendChild(li);
+                    });
+                }
+
+                const renderStateOptions = () => {
+                    fromStateSelect.innerHTML = '';
+                    toStateSelect.innerHTML = '';
+                    states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state;
+                        option.textContent = state;
+                        fromStateSelect.appendChild(option);
+                        toStateSelect.appendChild(option.cloneNode(true));
+                    });
+                }
+
+                const renderStartStateOptions = () => {
+                    startStateSelect.innerHTML = '';
+                    states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state;
+                        option.textContent = state;
+                        startStateSelect.appendChild(option);
+                    });
+                }
+
+                const addAlphabet = (e) => {
+                    e.preventDefault();
+                    const value = alphabetField.value.trim();
+
+                    if (value === '') {
+                        return;
+                    }
+
+                    alphabetField.value = '';
+
+                    if (alphabets.includes(value)) {
+                        return;
+                    }
+
+                    alphabets.push(value);
+                    renderAlphabetList();
+                    renderAlphabetOptions();
+                }
+
+                const renderAlphabetList = () => {
+                    alphabetList.innerHTML = '';
+                    alphabets.forEach(alphabet => {
+                        const li = document.createElement('li');
+                        li.classList = "p-3 border border-gray-300"
+                        li.textContent = alphabet;
+                        alphabetList.appendChild(li);
+                    });
+                }
+
+                const renderAlphabetOptions = () => {
+                    alphabetSelect.innerHTML = '';
+                    const option = document.createElement('option');
+                    option.value = 'eps';
+                    option.textContent = 'ε';
+                    alphabetSelect.appendChild(option);
+                    alphabets.forEach(alphabet => {
+                        const option = document.createElement('option');
+                        option.value = alphabet;
+                        option.textContent = alphabet;
+                        alphabetSelect.appendChild(option);
+                    });
+
+                }
+
+                const addTransition = (e) => {
+                    e.preventDefault();
+                    const fromStateValue = fromStateSelect.value;
+                    const toStateValue = toStateSelect.value;
+                    const inputValue = alphabetSelect.value;
+
+                    if (fromStateValue === '' || toStateValue === '' || inputValue === '') {
+                        return;
+                    }
+
+                    const transition = {
+                        from: fromStateValue,
+                        to: toStateValue,
+                        input: inputValue
+                    }
+
+                    transitions.push(transition);
+                    renderTransitionList();
+                }
+
+                const renderTransitionList = () => {
+                    transitionList.innerHTML = '';
+                    transitions.forEach(transition => {
+                        const li = document.createElement('li');
+                        li.classList = "p-3 border border-gray-300"
+                        li.textContent = `${transition.from} -> ${transition.to} : ${transition.input === 'eps' ? 'ε' : transition.input}`;
+                        transitionList.appendChild(li);
+                    });
+                }
+
+                const setStartState = (e) => {
+                    e.preventDefault();
+                    const startStateValue = startStateSelect.value;
+
+                    if (startStateValue === '') {
+                        return;
+                    }
+
+                    startState = startStateValue;
+                    currentStartState.textContent = `(Current: ${startState})`;
+                }
+
+                const addAcceptState = (e) => {
+                    e.preventDefault();
+                    const value = acceptStateSelect.value;
+
+                    if (value === '') {
+                        return;
+                    }
+
+                    if (acceptState.includes(value)) {
+                        return;
+                    }
+
+                    acceptState.push(value);
+
+                    renderAcceptStateList();
+
+                }
+
+                const renderAcceptStateList = () => {
+                    acceptStateList.innerHTML = '';
+                    acceptState.forEach(state => {
+                        const li = document.createElement('li');
+                        li.classList = "p-3 border border-gray-300"
+                        li.textContent = state;
+                        acceptStateList.appendChild(li);
+                    });
+                }
+            </script>
+
+            <script>
+                function hardCodeInput() {
+                    return new Graph(
+                        '0',
+                        ['10'],
+                        ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                        ['a', 'b'],
+                        [
+                            {
+                                from: '0',
+                                to: '1',
+                                input: 'eps'
+                            },
+                            {
+                                from: '0',
+                                to: '7',
+                                input: 'eps'
+                            },
+                            {
+                                from: '1',
+                                to: '2',
+                                input: 'eps'
+                            },
+                            {
+                                from: '2',
+                                to: '3',
+                                input: 'a'
+                            },
+                            {
+                                from: '3',
+                                to: '6',
+                                input: 'eps'
+                            },
+                            {
+                                from: '1',
+                                to: '4',
+                                input: 'eps'
+                            },
+                            {
+                                from: '4',
+                                to: '5',
+                                input: 'b'
+                            },
+                            {
+                                from: '5',
+                                to: '6',
+                                input: 'eps'
+                            },
+                            {
+                                from: '6',
+                                to: '1',
+                                input: 'eps'
+                            },
+                            {
+                                from: '6',
+                                to: '7',
+                                input: 'eps'
+                            },
+                            {
+                                from: '7',
+                                to: '8',
+                                input: 'a'
+                            },
+                            {
+                                from: '8',
+                                to: '9',
+                                input: 'b'
+                            },
+                            {
+                                from: '9',
+                                to: '10',
+                                input: 'b'
+                            }
+
+                        ]
+                    )
+                }
+
+                function generateFSMDotString(startState, acceptStates, transitions) {
+                    console.log(startState, acceptStates, transitions);
+                    let dotStr = "digraph FSM {\n";
+                    dotStr += "rankdir=LR;\n";
+                    dotStr += "size=\"8,5\";\n";
+                    dotStr += "node [shape = doublecircle]; " + acceptStates.join(' ') + ";\n";
+                    dotStr += "node [shape = point]; INITIAL_STATE\n";
+                    dotStr += "node [shape = circle];\n";
+                    dotStr += "INITIAL_STATE -> " + startState + ";\n";
+ 
+                    for (const [src, transitionObj] of Object.entries(transitions)) {
+                        for (const [alphabet, dest] of Object.entries(transitionObj)) {
+                            dotStr += `${src} -> ${dest} [label="${alphabet}"];\n`;
+                        }
+                    }
+
+                    dotStr += "}";
+                    return dotStr;
+                }
+
+                function renderGraph(dotString) {
+                    try {
+                        d3.select("#mynetwork").graphviz().zoom(false).renderDot(dotString);
+                    } catch (error) {
+                        console.error("Invalid input. Please check your FSM definition.");
+                    }
+                }
+
+                function generateAndRenderFSM() {
+                    const nfaGraph = new Graph(startState, acceptState, states, alphabets, transitions);
+                    // const nfaGraph = hardCodeInput();
+                    const dfaGraph = nfaToDfa(nfaGraph);
+                    
+
+                    let dotString = generateFSMDotString(dfaGraph.startState, dfaGraph.acceptStates, dfaGraph.transitions);
+                    renderGraph(dotString);
+                }
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
